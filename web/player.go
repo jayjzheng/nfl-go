@@ -3,6 +3,7 @@ package web
 import (
 	"io/ioutil"
 	"regexp"
+	"strings"
 
 	"github.com/pkg/errors"
 )
@@ -20,25 +21,41 @@ type Player struct {
 	College    string
 }
 
-func (c *Client) FetchPlayerGSIS(p Player) (string, error) {
+type PlayerIDs struct {
+	GSIS string
+	ESB  string
+}
+
+func (c *Client) FetchPlayerIDs(p Player) (*PlayerIDs, error) {
 	u := c.BaseURL
 	u.Path = p.Href
 
 	resp, err := c.get(u.String())
 	if err != nil {
-		return "", errors.Wrap(err, "get")
+		return nil, errors.Wrap(err, "get")
 	}
 	defer resp.Body.Close()
 
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return "", errors.Wrap(err, "ReadAll")
+		return nil, errors.Wrap(err, "ReadAll")
 	}
 
-	reg := regexp.MustCompile(`GSIS ID: (.+)`)
-	if ss := reg.FindSubmatch(b); len(ss) > 1 {
-		return string(ss[1]), nil
+	var ids PlayerIDs
+
+	gsis := regexp.MustCompile(`GSIS ID: (\d+\-\d+)`)
+	if ss := gsis.FindSubmatch(b); len(ss) > 1 {
+		ids.GSIS = strings.TrimSpace(string(ss[1]))
 	}
 
-	return "", ErrNotFound
+	esb := regexp.MustCompile(`ESB ID: (.+)`)
+	if ss := esb.FindSubmatch(b); len(ss) > 1 {
+		ids.ESB = strings.TrimSpace(string(ss[1]))
+	}
+
+	if ids.GSIS == "" || ids.ESB == "" {
+		return nil, ErrNotFound
+	}
+
+	return &ids, nil
 }

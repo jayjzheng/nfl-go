@@ -1,6 +1,7 @@
 package web
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -12,10 +13,38 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestFetchPlayers(t *testing.T) {
+func TestFetchRosterGetError(t *testing.T) {
+
+	m := client.NewMock(
+		http.StatusOK,
+		nil,
+		errors.New("some-error"),
+	)
+
 	c := Client{
 		BaseURL: &url.URL{},
-		Http:    mockRoster(t, "sf"),
+		Http:    m,
+	}
+
+	_, err := c.FetchRoster("")
+	assert.Error(t, err)
+}
+
+func TestFetchRosterOK(t *testing.T) {
+	f, err := os.Open(fmt.Sprintf("./fixtures/sf.html"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	m := client.NewMock(
+		http.StatusOK,
+		ioutil.NopCloser(f),
+		nil,
+	)
+
+	c := Client{
+		BaseURL: &url.URL{},
+		Http:    m,
 	}
 
 	r, err := c.FetchRoster("SF")
@@ -34,17 +63,4 @@ func TestFetchPlayers(t *testing.T) {
 			College:    "LSU",
 		}, r.Players[0])
 	}
-}
-
-func mockRoster(t *testing.T, team string) *client.Mock {
-	f, err := os.Open(fmt.Sprintf("./fixtures/rosters/%s.html", team))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	return client.NewMock(
-		http.StatusOK,
-		ioutil.NopCloser(f),
-		nil,
-	)
 }

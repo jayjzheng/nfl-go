@@ -80,9 +80,3 @@ func (c *Client) rosterURL(team string) *url.URL {
 
 	return &u
 }
-
-func (c *Client) playerURL(path string) *url.URL {
-	u := *c.BaseURL
-	u.Path = path
-	return &u
-}

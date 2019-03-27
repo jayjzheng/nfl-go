@@ -2,7 +2,6 @@ package web
 
 import (
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -47,7 +46,7 @@ func TestFetchPlayerIDsNotFound(t *testing.T) {
 }
 
 func TestFetchPlayerIDsOK(t *testing.T) {
-	f, err := os.Open(fmt.Sprintf("./fixtures/ahkellowitherspoon.html"))
+	f, err := os.Open("./fixtures/ahkellowitherspoon.html")
 	if err != nil {
 		t.Fatal(err)
 	}

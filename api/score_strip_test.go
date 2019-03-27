@@ -12,7 +12,7 @@ import (
 )
 
 func TestFetchScoreStrip(t *testing.T) {
-	f, err := os.Open(fmt.Sprintf("./fixtures/score_strip.xml"))
+	f, err := os.Open("./fixtures/score_strip.xml")
 	if err != nil {
 		t.Fatal(err)
 	}

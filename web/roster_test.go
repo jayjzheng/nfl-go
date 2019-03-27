@@ -2,7 +2,6 @@ package web
 
 import (
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -31,7 +30,7 @@ func TestFetchRosterGetError(t *testing.T) {
 }
 
 func TestFetchRosterOK(t *testing.T) {
-	f, err := os.Open(fmt.Sprintf("./fixtures/sf.html"))
+	f, err := os.Open("./fixtures/sf.html")
 	if err != nil {
 		t.Fatal(err)
 	}

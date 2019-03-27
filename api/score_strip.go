@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/xml"
 	"fmt"
-	"net/http"
 	"net/url"
 
 	"github.com/pkg/errors"
@@ -45,6 +44,21 @@ type FetchScoreStripOutput struct {
 	} `xml:"gms"`
 }
 
+func (c *Client) FetchScoreStrip(in *FetchScoreStripInput) (*FetchScoreStripOutput, error) {
+	resp, err := c.get(c.scoreStripURL(in))
+	if err != nil {
+		return nil, errors.Wrap(err, "Http.Do")
+	}
+	defer resp.Body.Close()
+
+	var out FetchScoreStripOutput
+	if err := xml.NewDecoder(resp.Body).Decode(&out); err != nil {
+		return nil, errors.Wrap(err, "decode response")
+	}
+
+	return &out, nil
+}
+
 func (c *Client) scoreStripURL(in *FetchScoreStripInput) *url.URL {
 	if in.LiveUpdate {
 		return c.BaseURLs.LiveUpdateScoreStrip
@@ -59,25 +73,4 @@ func (c *Client) scoreStripURL(in *FetchScoreStripInput) *url.URL {
 
 	u.RawQuery = vv.Encode()
 	return u
-}
-
-func (c *Client) FetchScoreStrip(in *FetchScoreStripInput) (*FetchScoreStripOutput, error) {
-	u := c.scoreStripURL(in)
-	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
-	if err != nil {
-		return nil, errors.Wrap(err, "NewRequest")
-	}
-
-	resp, err := c.Http.Do(req)
-	if err != nil {
-		return nil, errors.Wrap(err, "Http.Do")
-	}
-	defer resp.Body.Close()
-
-	var out FetchScoreStripOutput
-	if err := xml.NewDecoder(resp.Body).Decode(&out); err != nil {
-		return nil, errors.Wrap(err, "decode response")
-	}
-
-	return &out, nil
 }

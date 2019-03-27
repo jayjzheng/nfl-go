@@ -22,7 +22,7 @@ type Roster struct {
 }
 
 func (c *Client) FetchRoster(team string) (*Roster, error) {
-	resp, err := c.get(c.rosterURL(team).String())
+	resp, err := c.get(c.rosterURL(team))
 	if err != nil {
 		return nil, errors.Wrap(err, "get")
 	}

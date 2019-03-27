@@ -50,8 +50,8 @@ func WithBaseURLs(bu *BaseURLs) func(*Client) {
 	}
 }
 
-func (c *Client) get(u string) (*http.Response, error) {
-	req, err := http.NewRequest(http.MethodGet, u, nil)
+func (c *Client) get(u *url.URL) (*http.Response, error) {
+	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "NewRequest")
 	}
@@ -69,17 +69,17 @@ func (c *Client) get(u string) (*http.Response, error) {
 }
 
 func defaultBaseURLs() *BaseURLs {
-	return &BaseURLs{
-		LiveUpdateScoreStrip: mustParseURL("http://www.nfl.com/liveupdate/scorestrip/ss.xml"),
-		LiveUpdateGame:       mustParseURL("http://www.nfl.com/liveupdate/game-center"),
-		ScoreStrip:           mustParseURL("http://www.nfl.com/ajax/scorestrip"),
+	parse := func(s string) *url.URL {
+		u, err := url.Parse(s)
+		if err != nil {
+			panic(err)
+		}
+		return u
 	}
-}
 
-func mustParseURL(s string) *url.URL {
-	u, err := url.Parse(s)
-	if err != nil {
-		panic(err)
+	return &BaseURLs{
+		LiveUpdateScoreStrip: parse("http://www.nfl.com/liveupdate/scorestrip/ss.xml"),
+		LiveUpdateGame:       parse("http://www.nfl.com/liveupdate/game-center"),
+		ScoreStrip:           parse("http://www.nfl.com/ajax/scorestrip"),
 	}
-	return u
 }

@@ -3,6 +3,7 @@ package web
 import (
 	"errors"
 	"net/http"
+	"net/url"
 	"testing"
 
 	"github.com/jayjzheng/http-go/client"
@@ -34,7 +35,7 @@ func TestClientGetError(t *testing.T) {
 	)
 	c := Client{Http: m}
 
-	_, err := c.get("some-url")
+	_, err := c.get(&url.URL{})
 	assert.NotNil(t, err)
 }
 
@@ -42,7 +43,7 @@ func TestClientInvalidStatus(t *testing.T) {
 	m := client.NewMock(http.StatusNotFound, nil, nil)
 	c := Client{Http: m}
 
-	_, err := c.get("some-url")
+	_, err := c.get(&url.URL{})
 	if assert.Error(t, err) {
 		assert.Contains(t, err.Error(), "404")
 	}

@@ -39,8 +39,8 @@ func WithHttp(hc *http.Client) func(*Client) {
 	}
 }
 
-func (c *Client) get(u string) (*http.Response, error) {
-	req, err := http.NewRequest(http.MethodGet, u, nil)
+func (c *Client) get(u *url.URL) (*http.Response, error) {
+	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "NewRequest")
 	}

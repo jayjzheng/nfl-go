@@ -30,7 +30,7 @@ func (c *Client) FetchPlayerIDs(p Player) (*PlayerIDs, error) {
 	u := c.BaseURL
 	u.Path = p.Href
 
-	resp, err := c.get(u.String())
+	resp, err := c.get(u)
 	if err != nil {
 		return nil, errors.Wrap(err, "get")
 	}

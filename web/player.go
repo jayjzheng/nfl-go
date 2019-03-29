@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/jayjzheng/nfl-go"
 	"github.com/pkg/errors"
 )
 
@@ -22,8 +23,8 @@ type Player struct {
 }
 
 type PlayerIDs struct {
-	GSIS string
-	ESB  string
+	GSIS nfl.GSIS
+	ESB  nfl.ESB
 }
 
 func (c *Client) FetchPlayerIDs(p Player) (*PlayerIDs, error) {
@@ -41,16 +42,9 @@ func (c *Client) FetchPlayerIDs(p Player) (*PlayerIDs, error) {
 		return nil, errors.Wrap(err, "ReadAll")
 	}
 
-	var ids PlayerIDs
-
-	gsis := regexp.MustCompile(`GSIS ID: (\d+\-\d+)`)
-	if ss := gsis.FindSubmatch(b); len(ss) > 1 {
-		ids.GSIS = strings.TrimSpace(string(ss[1]))
-	}
-
-	esb := regexp.MustCompile(`ESB ID: (.+)`)
-	if ss := esb.FindSubmatch(b); len(ss) > 1 {
-		ids.ESB = strings.TrimSpace(string(ss[1]))
+	ids := PlayerIDs{
+		GSIS: nfl.GSIS(parse(b, `GSIS ID: (\d+\-\d+)`)),
+		ESB:  nfl.ESB(parse(b, `ESB ID: (.+)`)),
 	}
 
 	if ids.GSIS == "" || ids.ESB == "" {
@@ -58,4 +52,12 @@ func (c *Client) FetchPlayerIDs(p Player) (*PlayerIDs, error) {
 	}
 
 	return &ids, nil
+}
+
+func parse(b []byte, rs string) string {
+	re := regexp.MustCompile(rs)
+	if ss := re.FindSubmatch(b); len(ss) > 1 {
+		return strings.TrimSpace(string(ss[1]))
+	}
+	return ""
 }

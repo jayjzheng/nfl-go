@@ -47,7 +47,7 @@ type FetchScoreStripOutput struct {
 func (c *Client) FetchScoreStrip(in *FetchScoreStripInput) (*FetchScoreStripOutput, error) {
 	resp, err := c.get(c.scoreStripURL(in))
 	if err != nil {
-		return nil, errors.Wrap(err, "Http.Do")
+		return nil, errors.Wrap(err, "get")
 	}
 	defer resp.Body.Close()
 

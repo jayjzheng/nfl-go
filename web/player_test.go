@@ -9,6 +9,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/jayjzheng/nfl-go"
+
 	"github.com/jayjzheng/http-go/client"
 	"github.com/stretchr/testify/assert"
 )
@@ -64,7 +66,7 @@ func TestFetchPlayerIDsOK(t *testing.T) {
 
 	ids, err := c.FetchPlayerIDs(Player{})
 	if assert.NoError(t, err) {
-		assert.Equal(t, "00-0033783", ids.GSIS, "gsis")
-		assert.Equal(t, "WIT145608", ids.ESB, "esb")
+		assert.Equal(t, nfl.GSIS("00-0033783"), ids.GSIS, "gsis")
+		assert.Equal(t, nfl.ESB("WIT145608"), ids.ESB, "esb")
 	}
 }

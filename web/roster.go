@@ -8,14 +8,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-var Teams = []string{
-	"ATL", "BAL", "BUF", "CAR", "CHI", "CIN", "CLE",
-	"DAL", "DEN", "DET", "GB", "TEN", "HOU", "IND",
-	"JAX", "KC", "LA", "OAK", "MIA", "MIN", "NE",
-	"NO", "NYG", "NYJ", "PHI", "ARI", "PIT", "LAC",
-	"SF", "SEA", "TB", "WAS",
-}
-
 type Roster struct {
 	Team    string
 	Players []Player

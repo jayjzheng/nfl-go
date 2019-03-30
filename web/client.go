@@ -22,7 +22,11 @@ func NewClient(opts ...func(*Client)) *Client {
 	}
 
 	if c.Http == nil {
-		c.Http = &http.Client{}
+		c.Http = &http.Client{
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				return http.ErrUseLastResponse
+			},
+		}
 	}
 
 	if c.BaseURL == nil {

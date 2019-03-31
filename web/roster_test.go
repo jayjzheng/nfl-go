@@ -48,18 +48,21 @@ func TestFetchRosterOK(t *testing.T) {
 
 	r, err := c.FetchRoster("SF")
 	if assert.NoError(t, err) {
+		num := 91
+
 		assert.Equal(t, "SF", r.Team)
 		assert.Equal(t, len(r.Players), 69)
 		assert.EqualValues(t, Player{
-			Href:       "/player/kwonalexander/2552592/profile",
-			Name:       "Alexander, Kwon",
-			Position:   "MLB",
+			Href:       "/player/arikarmstead/2552493/profile",
+			Name:       "Armstead, Arik",
+			Number:     &num,
+			Position:   "DE",
 			Status:     "ACT",
-			Height:     "6'1\"",
-			Weight:     "227",
-			BirthDate:  "8/3/1994",
-			Experience: "5",
-			College:    "LSU",
-		}, r.Players[0])
+			Height:     "6'7\"",
+			Weight:     292,
+			BirthDate:  "11/15/1993",
+			Experience: 5,
+			College:    "Oregon",
+		}, r.Players[1])
 	}
 }

@@ -13,12 +13,12 @@ type Player struct {
 	Href       string
 	Name       string
 	Position   string
-	Number     string
+	Number     *int // sometimes players don't have a number
 	Status     string
 	Height     string
-	Weight     string
+	Weight     int
 	BirthDate  string
-	Experience string
+	Experience int
 	College    string
 }
 

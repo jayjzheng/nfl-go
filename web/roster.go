@@ -2,9 +2,11 @@ package web
 
 import (
 	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/hashicorp/go-multierror"
 	"github.com/pkg/errors"
 )
 
@@ -25,41 +27,66 @@ func (c *Client) FetchRoster(team string) (*Roster, error) {
 		return nil, errors.Wrap(err, "goquery.NewDocumentFromReader")
 	}
 
-	r := Roster{
-		Team:    team,
-		Players: []Player{},
-	}
+	var (
+		r = Roster{
+			Team:    team,
+			Players: []Player{},
+		}
+		errs *multierror.Error
+	)
 
 	doc.Find("table#result tbody tr").Each(func(_ int, s *goquery.Selection) {
 		sel := s.Find("td")
 
 		if validSelection(sel) {
-			r.Players = append(r.Players, c.toPlayer(sel))
+			p, err := c.toPlayer(sel)
+			if err != nil {
+				errs = multierror.Append(errs, err)
+				return
+			}
+			r.Players = append(r.Players, *p)
 		}
 	})
 
-	return &r, nil
+	return &r, errs.ErrorOrNil()
 }
 
 func validSelection(sel *goquery.Selection) bool {
 	return sel.Length() == 9
 }
 
-func (c *Client) toPlayer(s *goquery.Selection) Player {
+func (c *Client) toPlayer(s *goquery.Selection) (*Player, error) {
 	href, _ := s.Eq(1).Find("a").Attr("href")
 
-	return Player{
-		Href:       href,
-		Number:     strings.TrimSpace(s.Eq(0).Text()),
-		Name:       strings.TrimSpace(s.Eq(1).Text()),
-		Position:   strings.TrimSpace(s.Eq(2).Text()),
-		Status:     strings.TrimSpace(s.Eq(3).Text()),
-		Height:     strings.TrimSpace(s.Eq(4).Text()),
-		Weight:     strings.TrimSpace(s.Eq(5).Text()),
-		BirthDate:  strings.TrimSpace(s.Eq(6).Text()),
-		Experience: strings.TrimSpace(s.Eq(7).Text()),
-		College:    strings.TrimSpace(s.Eq(8).Text()),
+	parse := func(s *goquery.Selection, i int) string {
+		return strings.TrimSpace(s.Eq(i).Text())
 	}
+
+	num, err := atoi(parse(s, 0))
+	if err != nil {
+		return nil, err
+	}
+	weight, err := atoi(parse(s, 5))
+	if err != nil {
+		return nil, err
+	}
+	exp, err := atoi(parse(s, 7))
+	if err != nil {
+		return nil, err
+	}
+
+	return &Player{
+		Href:       href,
+		Number:     num,
+		Name:       parse(s, 1),
+		Position:   parse(s, 2),
+		Status:     parse(s, 3),
+		Height:     parse(s, 4),
+		Weight:     *weight,
+		BirthDate:  parse(s, 6),
+		Experience: *exp,
+		College:    parse(s, 8),
+	}, nil
 }
 
 func (c *Client) rosterURL(team string) *url.URL {
@@ -71,4 +98,17 @@ func (c *Client) rosterURL(team string) *url.URL {
 	u.RawQuery = vv.Encode()
 
 	return &u
+}
+
+func atoi(s string) (*int, error) {
+	if s == "" {
+		return nil, nil
+	}
+
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		return nil, err
+	}
+
+	return &i, nil
 }

@@ -1,6 +1,8 @@
 package api
 
 import (
+	"encoding/json"
+
 	"github.com/jayjzheng/nfl-go"
 )
 
@@ -16,10 +18,10 @@ type Play struct {
 	Description    string `json:"desc"`
 	Note           string `json:"note"`
 	Players        map[nfl.GSIS][]struct {
-		Sequence int    `json:"sequence"`
-		Clubcode string `json:"clubcode"`
-		Name     string `json:"playerName"`
-		StatID   int    `json:"statId"`
-		Yards    int    `json:"yards"`
+		Sequence int         `json:"sequence"`
+		Clubcode string      `json:"clubcode"`
+		Name     string      `json:"playerName"`
+		StatID   int         `json:"statId"`
+		Yards    json.Number `json:"yards"`
 	} `json:"players"`
 }

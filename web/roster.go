@@ -1,6 +1,8 @@
 package web
 
 import (
+	"encoding/json"
+	"io"
 	"net/url"
 	"strconv"
 	"strings"
@@ -15,48 +17,83 @@ type Roster struct {
 	Players []Player
 }
 
-func (c *Client) FetchRoster(team string) (*Roster, error) {
-	resp, err := c.get(c.rosterURL(team))
-	if err != nil {
-		return nil, errors.Wrap(err, "get")
-	}
-	defer resp.Body.Close()
+// RosterURL return the url for a team's roster.
+func RosterURL(team string) string {
+	u, _ := url.Parse(baseURL)
+	u.Path = "/teams/roster"
 
-	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	vv := u.Query()
+	vv.Set("team", team)
+	u.RawQuery = vv.Encode()
+
+	return u.String()
+}
+
+// DecodeRosterJSON decodes JSON from r into a Roster.
+func DecodeRosterJSON(r io.Reader) (*Roster, error) {
+	var roster Roster
+
+	if err := json.NewDecoder(r).Decode(&roster); err != nil {
+		return nil, errors.Wrap(err, "Decode")
+	}
+
+	return &roster, nil
+}
+
+// DecodeRosterHTML decodes HTML from r into a Roster.
+func DecodeRosterHTML(r io.Reader) (*Roster, error) {
+	doc, err := goquery.NewDocumentFromReader(r)
 	if err != nil {
-		return nil, errors.Wrap(err, "goquery.NewDocumentFromReader")
+		return nil, errors.Wrap(err, "NewDocumentFromReader")
 	}
 
 	var (
-		r = Roster{
-			Team:    team,
-			Players: []Player{},
-		}
-		errs *multierror.Error
+		roster Roster
+		errs   *multierror.Error
 	)
+
+	doc.Find("meta#teamName").Each(func(_ int, s *goquery.Selection) {
+		roster.Team, _ = s.Attr("content")
+	})
 
 	doc.Find("table#result tbody tr").Each(func(_ int, s *goquery.Selection) {
 		sel := s.Find("td")
 
-		if validSelection(sel) {
-			p, err := c.toPlayer(sel)
+		if validPlayer(sel) {
+			p, err := toPlayer(sel)
 			if err != nil {
 				errs = multierror.Append(errs, err)
 				return
 			}
-			r.Players = append(r.Players, *p)
+			roster.Players = append(roster.Players, *p)
 		}
 	})
 
-	return &r, errs.ErrorOrNil()
+	return &roster, errs.ErrorOrNil()
 }
 
-func validSelection(sel *goquery.Selection) bool {
+// RosterHTMLtoJSON decodes HTML from r into a Roster, converts it to JSON and writes to w.
+// pretty adds indentation.
+func RosterHTMLtoJSON(r io.Reader, w io.Writer, pretty bool) error {
+	roster, err := DecodeRosterHTML(r)
+	if err != nil {
+		return errors.Wrap(err, "DecodeRosterHTML")
+	}
+
+	encoder := json.NewEncoder(w)
+	if pretty {
+		encoder.SetIndent("", "\t")
+	}
+
+	return errors.Wrap(encoder.Encode(roster), "Encode")
+}
+
+func validPlayer(sel *goquery.Selection) bool {
 	return sel.Length() == 9
 }
 
-func (c *Client) toPlayer(s *goquery.Selection) (*Player, error) {
-	href, _ := s.Eq(1).Find("a").Attr("href")
+func toPlayer(s *goquery.Selection) (*Player, error) {
+	href, _ := s.Eq(1).Find("a").Attr("href") // ok if empty
 
 	parse := func(s *goquery.Selection, i int) string {
 		return strings.TrimSpace(s.Eq(i).Text())
@@ -87,17 +124,6 @@ func (c *Client) toPlayer(s *goquery.Selection) (*Player, error) {
 		Experience: *exp,
 		College:    parse(s, 8),
 	}, nil
-}
-
-func (c *Client) rosterURL(team string) *url.URL {
-	u := *c.BaseURL
-	u.Path = "/teams/roster"
-
-	vv := u.Query()
-	vv.Set("team", team)
-	u.RawQuery = vv.Encode()
-
-	return &u
 }
 
 func atoi(s string) (*int, error) {

@@ -1,70 +1,28 @@
 package web
 
 import (
-	"errors"
-	"io/ioutil"
-	"net/http"
-	"net/url"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/jayjzheng/nfl-go"
 
-	"github.com/jayjzheng/http-go/client"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestFetchPlayerIDGetError(t *testing.T) {
-	m := client.NewMock(
-		http.StatusOK,
-		nil,
-		errors.New("some-error"),
-	)
-
-	c := Client{
-		BaseURL: &url.URL{},
-		Http:    m,
-	}
-
-	_, err := c.FetchPlayerIDs(Player{})
-	assert.Error(t, err)
+func TestPlayerURL(t *testing.T) {
+	u := PlayerURL(Player{
+		Href: "/player/arikarmstead/2552493/profile",
+	})
+	assert.Equal(t, "http://www.nfl.com/player/arikarmstead/2552493/profile", u)
 }
-
-func TestFetchPlayerIDsNotFound(t *testing.T) {
-	m := client.NewMock(
-		http.StatusOK,
-		ioutil.NopCloser(strings.NewReader("")),
-		nil,
-	)
-
-	c := Client{
-		BaseURL: &url.URL{},
-		Http:    m,
-	}
-
-	_, err := c.FetchPlayerIDs(Player{})
-	assert.Equal(t, ErrNotFound, err)
-}
-
-func TestFetchPlayerIDsOK(t *testing.T) {
+func TestParsePlayerIDs(t *testing.T) {
 	f, err := os.Open("./fixtures/ahkellowitherspoon.html")
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer f.Close()
 
-	m := client.NewMock(
-		http.StatusOK,
-		ioutil.NopCloser(f),
-		nil,
-	)
-
-	c := Client{
-		BaseURL: &url.URL{},
-		Http:    m,
-	}
-
-	ids, err := c.FetchPlayerIDs(Player{})
+	ids, err := ParsePlayerIDs(f)
 	if assert.NoError(t, err) {
 		assert.Equal(t, nfl.GSIS("00-0033783"), ids.GSIS, "gsis")
 		assert.Equal(t, nfl.ESB("WIT145608"), ids.ESB, "esb")

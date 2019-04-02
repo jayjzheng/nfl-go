@@ -1,3 +1,5 @@
 coverage.out
 rosters.json
 cmd/rosters/rosters
+scores.json
+cmd/scores/scores

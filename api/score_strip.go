@@ -1,22 +1,34 @@
 package api
 
 import (
-	"encoding/xml"
 	"fmt"
-	"net/url"
-
-	"github.com/pkg/errors"
 )
 
-type FetchScoreStripInput struct {
-	Week       int
-	Season     int
-	SeasonType string
-	LiveUpdate bool
+type ScoreStripURLInput struct {
+	Season, Week int
+	SeasonType   string
+	LiveUpdate   bool
 }
 
-type FetchScoreStripOutput struct {
-	Data struct {
+func ScoreStripURL(in ScoreStripURLInput) string {
+	uu := defaultBaseURLs()
+	if in.LiveUpdate {
+		return uu.LiveUpdateScoreStrip.String()
+	}
+
+	u := uu.ScoreStrip
+	vv := u.Query()
+
+	vv.Set("season", fmt.Sprintf("%d", in.Season))
+	vv.Set("week", fmt.Sprintf("%d", in.Week))
+	vv.Set("seasonType", in.SeasonType)
+
+	u.RawQuery = vv.Encode()
+	return u.String()
+}
+
+type ScoreStrip struct {
+	Scores struct {
 		Year int    `xml:"y,attr"`
 		Week int    `xml:"w,attr"`
 		Type string `xml:"t,attr"`
@@ -42,35 +54,4 @@ type FetchScoreStripOutput struct {
 			GameType        string `xml:"gt,attr"`
 		} `xml:"g"`
 	} `xml:"gms"`
-}
-
-func (c *Client) FetchScoreStrip(in *FetchScoreStripInput) (*FetchScoreStripOutput, error) {
-	resp, err := c.get(c.scoreStripURL(in))
-	if err != nil {
-		return nil, errors.Wrap(err, "get")
-	}
-	defer resp.Body.Close()
-
-	var out FetchScoreStripOutput
-	if err := xml.NewDecoder(resp.Body).Decode(&out); err != nil {
-		return nil, errors.Wrap(err, "decode response")
-	}
-
-	return &out, nil
-}
-
-func (c *Client) scoreStripURL(in *FetchScoreStripInput) *url.URL {
-	if in.LiveUpdate {
-		return c.BaseURLs.LiveUpdateScoreStrip
-	}
-
-	u := c.BaseURLs.ScoreStrip
-	vv := u.Query()
-
-	vv.Set("season", fmt.Sprintf("%d", in.Season))
-	vv.Set("week", fmt.Sprintf("%d", in.Week))
-	vv.Set("seasonType", in.SeasonType)
-
-	u.RawQuery = vv.Encode()
-	return u
 }

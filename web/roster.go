@@ -1,7 +1,6 @@
 package web
 
 import (
-	"encoding/json"
 	"io"
 	"net/url"
 	"strconv"
@@ -27,17 +26,6 @@ func RosterURL(team string) string {
 	u.RawQuery = vv.Encode()
 
 	return u.String()
-}
-
-// DecodeRosterJSON decodes JSON from r into a Roster.
-func DecodeRosterJSON(r io.Reader) (*Roster, error) {
-	var roster Roster
-
-	if err := json.NewDecoder(r).Decode(&roster); err != nil {
-		return nil, errors.Wrap(err, "Decode")
-	}
-
-	return &roster, nil
 }
 
 // DecodeRosterHTML decodes HTML from r into a Roster.
@@ -70,22 +58,6 @@ func DecodeRosterHTML(r io.Reader) (*Roster, error) {
 	})
 
 	return &roster, errs.ErrorOrNil()
-}
-
-// RosterHTMLtoJSON decodes HTML from r into a Roster, converts it to JSON and writes to w.
-// pretty adds indentation.
-func RosterHTMLtoJSON(r io.Reader, w io.Writer, pretty bool) error {
-	roster, err := DecodeRosterHTML(r)
-	if err != nil {
-		return errors.Wrap(err, "DecodeRosterHTML")
-	}
-
-	encoder := json.NewEncoder(w)
-	if pretty {
-		encoder.SetIndent("", "\t")
-	}
-
-	return errors.Wrap(encoder.Encode(roster), "Encode")
 }
 
 func validPlayer(sel *goquery.Selection) bool {

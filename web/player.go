@@ -33,9 +33,9 @@ type PlayerIDs struct {
 	ESB  nfl.ESB
 }
 
-func PlayerURL(p Player) string {
+func PlayerURL(href string) string {
 	u, _ := url.Parse(baseURL)
-	u.Path = p.Href
+	u.Path = href
 
 	return u.String()
 }

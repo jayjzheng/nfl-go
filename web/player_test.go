@@ -10,9 +10,7 @@ import (
 )
 
 func TestPlayerURL(t *testing.T) {
-	u := PlayerURL(Player{
-		Href: "/player/arikarmstead/2552493/profile",
-	})
+	u := PlayerURL("/player/arikarmstead/2552493/profile")
 	assert.Equal(t, "http://www.nfl.com/player/arikarmstead/2552493/profile", u)
 }
 func TestParsePlayerIDs(t *testing.T) {

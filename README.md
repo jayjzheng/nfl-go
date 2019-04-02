@@ -8,3 +8,5 @@ client to fetch nfl json and nfl.com data
 ## NFL
 ### score strip
 ### games
+
+jq -r '.[].Players[].Href'

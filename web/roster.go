@@ -16,6 +16,17 @@ type Roster struct {
 	Players []Player
 }
 
+// RosterURLs returns the roster urls for teams.
+func RosterURLs(teams []string) []string {
+	uu := make([]string, len(teams))
+
+	for i, t := range teams {
+		uu[i] = RosterURL(t)
+	}
+
+	return uu
+}
+
 // RosterURL return the url for a team's roster.
 func RosterURL(team string) string {
 	u, _ := url.Parse(baseURL)

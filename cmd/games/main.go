@@ -1,17 +1,16 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/hashicorp/go-multierror"
-
 	"github.com/jayjzheng/http-go/client"
-	"github.com/jayjzheng/nfl-go"
+	"github.com/jayjzheng/nfl-go/api"
 	"github.com/jayjzheng/nfl-go/cmd"
-	"github.com/jayjzheng/nfl-go/web"
 )
 
 const (
@@ -19,13 +18,13 @@ const (
 )
 
 var (
-	teamStr string
-	pretty  bool
-	c       client.Multi
+	idStr  string
+	pretty bool
+	c      client.Multi
 )
 
 func init() {
-	flag.StringVar(&teamStr, "teams", "", "comma seprated team abbreviations")
+	flag.StringVar(&idStr, "ids", "", "comma seprated game ids")
 	flag.BoolVar(&pretty, "pretty", false, "pretty print")
 	flag.Parse()
 
@@ -40,29 +39,26 @@ func init() {
 }
 
 func main() {
-	teams, err := cmd.SplitInput(teamStr, sep)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	if len(teams) == 0 {
-		teams = nfl.TeamAbbreviations
-	}
-
-	resp := c.Get(web.RosterURLs(teams), client.ValidateStatusOK)
-	rr, err := rosters(resp, len(teams))
+	ids, err := cmd.SplitInput(idStr, sep)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	if err := cmd.WriteJSON(os.Stdout, rr, pretty); err != nil {
+	resp := c.Get(api.GameURLs(ids), client.ValidateStatusOK)
+	gg, err := games(resp, len(ids))
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	if err := cmd.WriteJSON(os.Stdout, gg, pretty); err != nil {
 		log.Fatalln(err)
 	}
 }
 
-func rosters(resp <-chan client.Response, count int) ([]web.Roster, error) {
+func games(resp <-chan client.Response, count int) ([]api.Game, error) {
 	var (
-		errs    *multierror.Error
-		rosters []web.Roster
+		errs  *multierror.Error
+		games []api.Game
 	)
 
 	for i := 0; i < count; i++ {
@@ -74,13 +70,13 @@ func rosters(resp <-chan client.Response, count int) ([]web.Roster, error) {
 		}
 		defer r.Body.Close()
 
-		roster, err := web.DecodeRosterHTML(r.Body)
-		if err != nil {
-			errs = multierror.Append(errs, r.Err)
+		var g api.Game
+		if err := json.NewDecoder(r.Body).Decode(&g); err != nil {
+			errs = multierror.Append(errs, err)
 			continue
 		}
-		rosters = append(rosters, *roster)
+		games = append(games, g)
 	}
 
-	return rosters, errs.ErrorOrNil()
+	return games, errs.ErrorOrNil()
 }

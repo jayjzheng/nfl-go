@@ -6,7 +6,10 @@ import (
 	"github.com/pkg/errors"
 )
 
-type Drives map[string]Drive
+type Drives struct {
+	Current int
+	Drives  map[json.Number]Drive
+}
 
 func (dd *Drives) UnmarshalJSON(data []byte) error {
 	var raw map[string]json.RawMessage
@@ -15,26 +18,38 @@ func (dd *Drives) UnmarshalJSON(data []byte) error {
 		return errors.Wrap(err, "unmarshal raw")
 	}
 
-	m := make(Drives)
-	var d Drive
+	dd.Drives = make(map[json.Number]Drive)
 	for k, v := range raw {
 		if k == "crntdrv" {
-			continue // TODO
+			if err := json.Unmarshal(v, &dd.Current); err != nil {
+				return errors.Wrap(err, "unmarshal nextupdate")
+			}
+			continue
 		}
 
+		var d Drive
 		if err := json.Unmarshal(v, &d); err != nil {
 			return errors.Wrap(err, "unmarshal Drive")
 		}
-
-		m[k] = d
+		dd.Drives[json.Number(k)] = d
 	}
 
-	*dd = m
 	return nil
 }
 
+func (dd Drives) MarshalJSON() ([]byte, error) {
+	raw := map[string]interface{}{
+		"crntdrv": dd.Current,
+	}
+
+	for k, d := range dd.Drives {
+		raw[string(k)] = d
+	}
+
+	return json.Marshal(raw)
+}
+
 type Drive struct {
-	Number         string
 	PossessionTeam string               `json:"posteam"`
 	Quarter        int                  `json:"qtr"`
 	Redzone        bool                 `json:"redzone"`

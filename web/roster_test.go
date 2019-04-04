@@ -7,6 +7,20 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestRosterURLs(t *testing.T) {
+	uu := RosterURLs([]string{
+		"foo",
+		"bar",
+	})
+
+	exp := []string{
+		"http://www.nfl.com/teams/roster?team=foo",
+		"http://www.nfl.com/teams/roster?team=bar",
+	}
+
+	assert.Equal(t, exp, uu)
+}
+
 func TestRosterURL(t *testing.T) {
 	u := RosterURL("foo")
 

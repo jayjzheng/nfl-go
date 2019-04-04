@@ -14,6 +14,6 @@ type Team struct {
 
 	Abbreviation string          `json:"abbr"`
 	TurnOvers    int             `json:"to"`
-	Players      json.RawMessage `json:"players"` // ?
 	Stats        Stats           `json:"stats"`
+	Players      json.RawMessage `json:"players"` // ?
 }

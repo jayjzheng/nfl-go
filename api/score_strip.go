@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"net/url"
 )
 
 type ScoreStripURLInput struct {
@@ -11,12 +12,11 @@ type ScoreStripURLInput struct {
 }
 
 func ScoreStripURL(in ScoreStripURLInput) string {
-	uu := defaultBaseURLs()
 	if in.LiveUpdate {
-		return uu.LiveUpdateScoreStrip.String()
+		return "http://www.nfl.com/liveupdate/scorestrip/ss.xml"
 	}
 
-	u := uu.ScoreStrip
+	u, _ := url.Parse("http://www.nfl.com/ajax/scorestrip")
 	vv := u.Query()
 
 	vv.Set("season", fmt.Sprintf("%d", in.Season))

@@ -1,33 +1,53 @@
 package api
 
 import (
+	"bytes"
+	"encoding/json"
 	"io/ioutil"
-	"net/http"
 	"os"
 	"testing"
 
-	"github.com/jayjzheng/http-go/client"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestFetchGame(t *testing.T) {
+func TestGameURLs(t *testing.T) {
+	uu := GameURLs([]string{
+		"foo",
+		"bar",
+	})
+
+	exp := []string{
+		"http://www.nfl.com/liveupdate/game-center/foo/foo_gtd.json",
+		"http://www.nfl.com/liveupdate/game-center/bar/bar_gtd.json",
+	}
+
+	assert.Equal(t, exp, uu)
+}
+
+func TestGameURL(t *testing.T) {
+	u := GameURL("foo")
+
+	assert.Equal(t,
+		"http://www.nfl.com/liveupdate/game-center/foo/foo_gtd.json",
+		u,
+	)
+}
+
+func TestGameUnmarshalJSON(t *testing.T) {
 	f, err := os.Open("./fixtures/2012080953.json")
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer f.Close()
 
-	m := client.NewMock(
-		http.StatusOK,
-		ioutil.NopCloser(f),
-		nil,
-	)
-
-	c := Client{
-		BaseURLs: defaultBaseURLs(),
-		Http:     m,
+	b, err := ioutil.ReadAll(f)
+	if err != nil {
+		t.Fatal(err)
 	}
 
-	g, err := c.FetchGame("2012080953")
+	var g Game
+	err = g.UnmarshalJSON(b)
+
 	if assert.NoError(t, err) {
 		assert.Equal(t, "2012080953", g.ID, "ID")
 		assert.Equal(t, int64(289), g.NextUpdate, "NextUpdate")
@@ -43,19 +63,33 @@ func TestFetchGame(t *testing.T) {
 		assert.Equal(t, "", g.Stadium, "Stadium")
 		assert.Equal(t, "NE", g.Home.Abbreviation)
 		assert.Equal(t, "NO", g.Away.Abbreviation)
-		assert.Equal(t, 26, len(g.Drives), "number of drives")
+		assert.Equal(t, 26, g.Drives.Current, "current drives")
+		assert.Equal(t, 26, len(g.Drives.Drives), "number of drives")
 		assert.Equal(t, 3, len(g.ScoreSummaries), "number of score summaries")
 	}
 }
 
-func TestGameURL(t *testing.T) {
-	uu := defaultBaseURLs()
-	c := Client{BaseURLs: uu}
+func TestGameMarshalJSON(t *testing.T) {
+	f1, err := os.Open("./fixtures/2012080953.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f1.Close()
 
-	u := c.gameURL("2012080953")
-	assert.Equal(t,
-		"http://www.nfl.com/liveupdate/game-center/2012080953/2012080953_gtd.json",
-		u.String(),
-	)
-	assert.Equal(t, *uu, *c.BaseURLs)
+	exp, err := ioutil.ReadAll(f1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var g Game
+	if err := json.Unmarshal(exp, &g); err != nil {
+		t.Fatal(err)
+	}
+
+	var b bytes.Buffer
+	if err := json.NewEncoder(&b).Encode(g); err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t, len(exp), b.Len())
 }

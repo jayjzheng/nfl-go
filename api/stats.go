@@ -1,8 +1,6 @@
 package api
 
-import (
-	"github.com/jayjzheng/nfl-go"
-)
+import "github.com/jayjzheng/nfl-go"
 
 type Stats struct {
 	Passing    map[nfl.GSIS]PassingStat   `json:"passing"`
@@ -33,10 +31,11 @@ type PassingStat struct {
 type RushingStat struct {
 	PlayerName string `json:"name"`
 
-	Attempt    int `json:"att"`
-	Yards      int `json:"yds"`
-	Touchdowns int `json:"tds"`
-	Long       int `json:"lng"`
+	Attempt       int `json:"att"`
+	Yards         int `json:"yds"`
+	Touchdowns    int `json:"tds"`
+	Long          int `json:"lng"`
+	LongTouchDown int `json:"lngtd"`
 
 	TwoPointAttempt int `json:"twopta"`
 	TwoPointMade    int `json:"twoptm"`
@@ -45,10 +44,11 @@ type RushingStat struct {
 type ReceivingStat struct {
 	PlayerName string `json:"name"`
 
-	Receptions int `json:"rec"`
-	Yards      int `json:"yds"`
-	Touchdowns int `json:"tds"`
-	Long       int `json:"lng"`
+	Receptions    int `json:"rec"`
+	Yards         int `json:"yds"`
+	Touchdowns    int `json:"tds"`
+	Long          int `json:"lng"`
+	LongTouchDown int `json:"lngtd"`
 
 	TwoPointAttempt int `json:"twopta"`
 	TwoPointMade    int `json:"twoptm"`
@@ -92,10 +92,11 @@ type PuntingStat struct {
 type ReturnStat struct {
 	PlayerName string `json:"name"`
 
-	Returns    int `json:"ret"`
-	Average    int `json:"avg"`
-	Touchdowns int `json:"tds"`
-	Long       int `json:"lng"`
+	Returns       int `json:"ret"`
+	Average       int `json:"avg"`
+	Touchdowns    int `json:"tds"`
+	Long          int `json:"lng"`
+	LongTouchDown int `json:"lngtd"`
 }
 
 type DefenseStat struct {

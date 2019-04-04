@@ -12,6 +12,8 @@ github.com/jayjzheng/http-go v0.0.0-20190322224449-f270b68ae15d h1:YekIjiNDyctwK
 github.com/jayjzheng/http-go v0.0.0-20190322224449-f270b68ae15d/go.mod h1:WDxEXEXVSQmf5xFBtOr5Cso82bsdnvI/GLs+BFuD+uY=
 github.com/jayjzheng/http-go v0.0.0-20190331183410-7f4f43e5bccb h1:HB+1kGrln2I/xxKE4eGKVL1ka2UgKVphPryLXqR98BU=
 github.com/jayjzheng/http-go v0.0.0-20190331183410-7f4f43e5bccb/go.mod h1:WDxEXEXVSQmf5xFBtOr5Cso82bsdnvI/GLs+BFuD+uY=
+github.com/jayjzheng/http-go v0.0.0-20190404022730-bdb108ca40ea h1:3SCfq3hdwwVJ5G+TkIEIXFoW6d1MpPYa6TgH00ODEEY=
+github.com/jayjzheng/http-go v0.0.0-20190404022730-bdb108ca40ea/go.mod h1:WDxEXEXVSQmf5xFBtOr5Cso82bsdnvI/GLs+BFuD+uY=
 github.com/pkg/errors v0.8.1 h1:iURUrRGxPUNPdy5/HRSm+Yj6okJ6UtLINN0Q9M4+h3I=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=

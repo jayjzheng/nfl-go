@@ -1,12 +1,11 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 	"net/http"
 	"os"
-
-	"github.com/hashicorp/go-multierror"
 
 	"github.com/jayjzheng/http-go/client"
 	"github.com/jayjzheng/nfl-go"
@@ -47,40 +46,31 @@ func main() {
 	if len(teams) == 0 {
 		teams = nfl.TeamAbbreviations
 	}
+	ctx := context.Background()
 
-	resp := c.Get(web.RosterURLs(teams), client.ValidateStatusOK)
-	rr, err := rosters(resp, len(teams))
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	if err := cmd.WriteJSON(os.Stdout, rr, pretty); err != nil {
-		log.Fatalln(err)
-	}
-}
-
-func rosters(resp <-chan client.Response, count int) ([]web.Roster, error) {
-	var (
-		errs    *multierror.Error
-		rosters []web.Roster
+	resp := c.Get(
+		ctx,
+		web.RosterURLs(teams),
+		client.ValidateStatusOK,
 	)
 
-	for i := 0; i < count; i++ {
-		r := <-resp
-
-		if r.Err != nil {
-			errs = multierror.Append(errs, r.Err)
-			continue
-		}
+	var rosters []web.Roster
+	fn := func(r *client.Response) error {
 		defer r.Body.Close()
 
 		roster, err := web.DecodeRosterHTML(r.Body)
 		if err != nil {
-			errs = multierror.Append(errs, r.Err)
-			continue
+			return err
 		}
 		rosters = append(rosters, *roster)
+		return nil
 	}
 
-	return rosters, errs.ErrorOrNil()
+	if err := c.Handle(ctx, resp, fn); err != nil {
+		log.Fatalln(err)
+	}
+
+	if err := cmd.WriteJSON(os.Stdout, rosters, pretty); err != nil {
+		log.Fatalln(err)
+	}
 }

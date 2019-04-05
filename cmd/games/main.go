@@ -1,13 +1,13 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"log"
 	"net/http"
 	"os"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/jayjzheng/http-go/client"
 	"github.com/jayjzheng/nfl-go/api"
 	"github.com/jayjzheng/nfl-go/cmd"
@@ -43,40 +43,31 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	ctx := context.Background()
 
-	resp := c.Get(api.GameURLs(ids), client.ValidateStatusOK)
-	gg, err := games(resp, len(ids))
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	if err := cmd.WriteJSON(os.Stdout, gg, pretty); err != nil {
-		log.Fatalln(err)
-	}
-}
-
-func games(resp <-chan client.Response, count int) ([]api.Game, error) {
-	var (
-		errs  *multierror.Error
-		games []api.Game
+	resp := c.Get(
+		ctx,
+		api.GameURLs(ids),
+		client.ValidateStatusOK,
 	)
 
-	for i := 0; i < count; i++ {
-		r := <-resp
-
-		if r.Err != nil {
-			errs = multierror.Append(errs, r.Err)
-			continue
-		}
+	var games []api.Game
+	fn := func(r *client.Response) error {
 		defer r.Body.Close()
 
 		var g api.Game
 		if err := json.NewDecoder(r.Body).Decode(&g); err != nil {
-			errs = multierror.Append(errs, err)
-			continue
+			return err
 		}
 		games = append(games, g)
+		return nil
 	}
 
-	return games, errs.ErrorOrNil()
+	if err := c.Handle(ctx, resp, fn); err != nil {
+		log.Fatalln(err)
+	}
+
+	if err := cmd.WriteJSON(os.Stdout, games, pretty); err != nil {
+		log.Fatalln(err)
+	}
 }

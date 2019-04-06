@@ -19,14 +19,18 @@ func WriteJSON(w io.Writer, v interface{}, pretty bool) error {
 }
 
 func SplitInput(s, sep string) ([]string, error) {
-	m := make(map[string]bool)
-
 	piped, err := pipedInput()
 	if err != nil {
 		return nil, err
 	}
+
+	m := make(map[string]bool)
 	if piped {
-		for _, l := range scanStdin() {
+		lines, err := scanStdin()
+		if err != nil {
+			return nil, err
+		}
+		for _, l := range lines {
 			split(l, sep, m)
 		}
 	}
@@ -63,14 +67,12 @@ func pipedInput() (bool, error) {
 	return false, nil
 }
 
-func scanStdin() (lines []string) {
+func scanStdin() (lines []string, err error) {
 	s := bufio.NewScanner(os.Stdin)
 
 	for s.Scan() {
-		lines = append(lines, string(s.Bytes()))
+		lines = append(lines, s.Text())
 	}
-	if s.Err() != nil {
-		panic(s.Err())
-	}
-	return lines
+
+	return lines, s.Err()
 }

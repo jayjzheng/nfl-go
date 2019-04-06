@@ -5,3 +5,5 @@ scores.json
 cmd/scores/scores
 games.json
 cmd/games/games
+players.json
+cmd/players/players

@@ -41,7 +41,7 @@ func TestDecodeRosterHTML(t *testing.T) {
 		assert.Equal(t, "SF", r.Team)
 		assert.Equal(t, len(r.Players), 69)
 		assert.EqualValues(t, Player{
-			Href:       "/player/arikarmstead/2552493/profile",
+			URL:        "http://www.nfl.com/player/arikarmstead/2552493/profile",
 			Name:       "Armstead, Arik",
 			Number:     &num,
 			Position:   "DE",

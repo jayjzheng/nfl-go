@@ -16,7 +16,7 @@ const (
 )
 
 type Player struct {
-	Href       string
+	URL        string
 	Name       string
 	Position   string
 	Number     *int // sometimes players don't have a number
@@ -26,6 +26,8 @@ type Player struct {
 	BirthDate  string
 	Experience int
 	College    string
+
+	IDs PlayerIDs
 }
 
 type PlayerIDs struct {
@@ -33,27 +35,17 @@ type PlayerIDs struct {
 	ESB  nfl.ESB
 }
 
-func PlayerURL(href string) string {
-	u, _ := url.Parse(baseURL)
-	u.Path = href
-
-	return u.String()
-}
-
-// ParsePlayerIDs parses text from r to find GSIS and ESB.
-// it matches regex patterns: `GSIS ID: (\d+\-\d+)` and `ESB ID: (\S+)`
-func ParsePlayerIDs(r io.Reader) (*PlayerIDs, error) {
+// DecodePlayerIDsHTML decodes HTML from r into a PlayerIDs.
+func DecodePlayerIDsHTML(r io.Reader) (*PlayerIDs, error) {
 	b, err := ioutil.ReadAll(r)
 	if err != nil {
 		return nil, errors.Wrap(err, "ReadAll")
 	}
 
-	ids := PlayerIDs{
+	return &PlayerIDs{
 		GSIS: nfl.GSIS(parse(b, `GSIS ID: (\d+\-\d+)`)),
 		ESB:  nfl.ESB(parse(b, `ESB ID: (\S+)`)),
-	}
-
-	return &ids, nil
+	}, nil
 }
 
 func parse(b []byte, rs string) string {
@@ -63,4 +55,11 @@ func parse(b []byte, rs string) string {
 		return strings.TrimSpace(string(ss[1]))
 	}
 	return ""
+}
+
+func playerURL(href string) string {
+	u, _ := url.Parse(baseURL)
+	u.Path += href
+
+	return u.String()
 }

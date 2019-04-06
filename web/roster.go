@@ -96,7 +96,7 @@ func toPlayer(s *goquery.Selection) (*Player, error) {
 	}
 
 	return &Player{
-		Href:       href,
+		URL:        playerURL(href),
 		Number:     num,
 		Name:       parse(s, 1),
 		Position:   parse(s, 2),

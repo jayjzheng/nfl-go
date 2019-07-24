@@ -1,6 +1,10 @@
 package api
 
-import "github.com/jayjzheng/nfl-go"
+import (
+	"encoding/json"
+
+	"github.com/jayjzheng/nfl-go"
+)
 
 type Stats struct {
 	Passing    map[nfl.GSIS]PassingStat   `json:"passing"`
@@ -102,11 +106,11 @@ type ReturnStat struct {
 type DefenseStat struct {
 	PlayerName string `json:"name"`
 
-	Tackles       int     `json:"tkl"`
-	Assists       int     `json:"ast"`
-	Sacks         float64 `json:"sk"`
-	Interceptions int     `json:"int"`
-	ForcedFumbles int     `json:"ffum"`
+	Tackles       int         `json:"tkl"`
+	Assists       int         `json:"ast"`
+	Sacks         json.Number `json:"sk"`
+	Interceptions int         `json:"int"`
+	ForcedFumbles int         `json:"ffum"`
 }
 
 type TeamStat struct {

@@ -48,11 +48,12 @@ func main() {
 	}
 	ctx := context.Background()
 
-	resp := c.Get(
-		ctx,
-		web.RosterURLs(teams),
-		client.ValidateStatusOK,
-	)
+	rr, err := web.RosterRequests(teams)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	resp := c.Do(ctx, rr, client.ValidateStatusOK)
 
 	var rosters []web.Roster
 	fn := func(r *client.Response) error {

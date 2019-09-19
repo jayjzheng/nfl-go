@@ -1,30 +1,31 @@
 package web
 
 import (
+	"net/http"
 	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRosterURLs(t *testing.T) {
-	uu := RosterURLs([]string{
+func TestRosterRequests(t *testing.T) {
+	rr, err := RosterRequests([]string{
 		"foo",
 		"bar",
 	})
+	assert.NoError(t, err)
 
-	exp := []string{
+	uu := []string{
 		"http://www.nfl.com/teams/roster?team=foo",
 		"http://www.nfl.com/teams/roster?team=bar",
 	}
 
-	assert.Equal(t, exp, uu)
-}
+	for i, u := range uu {
+		req := rr[i]
+		assert.Equal(t, u, req.URL.String())
+		assert.Equal(t, http.MethodGet, req.Method)
+	}
 
-func TestRosterURL(t *testing.T) {
-	u := RosterURL("foo")
-
-	assert.Equal(t, "http://www.nfl.com/teams/roster?team=foo", u)
 }
 
 func TestDecodeRosterHTML(t *testing.T) {

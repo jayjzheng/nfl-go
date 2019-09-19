@@ -2,6 +2,7 @@ package web
 
 import (
 	"io"
+	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
@@ -16,19 +17,25 @@ type Roster struct {
 	Players []Player
 }
 
-// RosterURLs returns the roster urls for teams.
-func RosterURLs(teams []string) []string {
-	uu := make([]string, len(teams))
+// RosterRequests returns the http Requests for teams.
+func RosterRequests(teams []string) ([]*http.Request, error) {
+	var (
+		rr   []*http.Request
+		errs *multierror.Error
+	)
 
-	for i, t := range teams {
-		uu[i] = RosterURL(t)
+	for _, t := range teams {
+		req, err := http.NewRequest(http.MethodGet, rosterURL(t), nil)
+		if err != nil {
+			errs = multierror.Append(errs, err)
+		}
+		rr = append(rr, req)
 	}
 
-	return uu
+	return rr, errs.ErrorOrNil()
 }
 
-// RosterURL return the url for a team's roster.
-func RosterURL(team string) string {
+func rosterURL(team string) string {
 	u, _ := url.Parse(baseURL)
 	u.Path = "/teams/roster"
 

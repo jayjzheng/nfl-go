@@ -45,11 +45,12 @@ func main() {
 	}
 	ctx := context.Background()
 
-	resp := c.Get(
-		ctx,
-		api.GameURLs(ids),
-		client.ValidateStatusOK,
-	)
+	rr, err := api.GameRequests(ids)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	resp := c.Do(ctx, rr, client.ValidateStatusOK)
 
 	var games []api.Game
 	fn := func(r *client.Response) error {

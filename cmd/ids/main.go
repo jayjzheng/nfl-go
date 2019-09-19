@@ -53,7 +53,16 @@ func main() {
 		ids = make(map[string]web.PlayerIDs)
 	)
 
-	resp := c.Get(ctx, uu, client.ValidateStatusOK)
+	var rr []*http.Request
+	for _, u := range uu {
+		req, err := http.NewRequest(http.MethodGet, u, nil)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		rr = append(rr, req)
+	}
+
+	resp := c.Do(ctx, rr, client.ValidateStatusOK)
 
 	fn := func(r *client.Response) error {
 		defer r.Body.Close()

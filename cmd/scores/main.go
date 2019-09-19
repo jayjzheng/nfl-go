@@ -30,14 +30,17 @@ func init() {
 }
 
 func main() {
-	u := api.ScoreStripURL(api.ScoreStripURLInput{
+	req, err := api.ScoreStripRequest(api.ScoreStripRequestInput{
 		Season:     season,
 		Week:       week,
 		SeasonType: seasonType,
 		LiveUpdate: live,
 	})
+	if err != nil {
+		log.Fatalln(err)
+	}
 
-	resp, err := c.Get(u)
+	resp, err := c.Do(req)
 	if err != nil {
 		log.Fatalln(err)
 	}

@@ -10,29 +10,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGameURLs(t *testing.T) {
-	uu := GameURLs([]string{
-		"foo",
-		"bar",
-	})
-
-	exp := []string{
-		"http://www.nfl.com/liveupdate/game-center/foo/foo_gtd.json",
-		"http://www.nfl.com/liveupdate/game-center/bar/bar_gtd.json",
-	}
-
-	assert.Equal(t, exp, uu)
-}
-
-func TestGameURL(t *testing.T) {
-	u := GameURL("foo")
-
-	assert.Equal(t,
-		"http://www.nfl.com/liveupdate/game-center/foo/foo_gtd.json",
-		u,
-	)
-}
-
 func TestGameUnmarshalJSON(t *testing.T) {
 	f, err := os.Open("./fixtures/2012080953.json")
 	if err != nil {

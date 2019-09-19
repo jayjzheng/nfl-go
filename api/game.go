@@ -2,27 +2,9 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/pkg/errors"
 )
-
-// GameURLs returns a slice of urls based on the ids.
-func GameURLs(ids []string) []string {
-	urls := make([]string, len(ids))
-	for i, id := range ids {
-		urls[i] = GameURL(id)
-	}
-	return urls
-}
-
-// GameURLs returns the game url based on the id.
-func GameURL(id string) string {
-	return fmt.Sprintf(
-		"http://www.nfl.com/liveupdate/game-center/%s/%s_gtd.json",
-		id, id,
-	)
-}
 
 type Game struct {
 	ID         string

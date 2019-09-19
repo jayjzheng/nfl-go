@@ -1,32 +1,5 @@
 package api
 
-import (
-	"fmt"
-	"net/url"
-)
-
-type ScoreStripURLInput struct {
-	Season, Week int
-	SeasonType   string
-	LiveUpdate   bool
-}
-
-func ScoreStripURL(in ScoreStripURLInput) string {
-	if in.LiveUpdate {
-		return "http://www.nfl.com/liveupdate/scorestrip/ss.xml"
-	}
-
-	u, _ := url.Parse("http://www.nfl.com/ajax/scorestrip")
-	vv := u.Query()
-
-	vv.Set("season", fmt.Sprintf("%d", in.Season))
-	vv.Set("week", fmt.Sprintf("%d", in.Week))
-	vv.Set("seasonType", in.SeasonType)
-
-	u.RawQuery = vv.Encode()
-	return u.String()
-}
-
 type Scores struct {
 	Year int    `xml:"y,attr"`
 	Week int    `xml:"w,attr"`
